@@ -586,7 +586,7 @@ SELECT @SQL AS [SQL]
                         if (sourRow["Default"].ToString().ToLower() == "getdate()")
                             defaultValue = " DEFAULT(GETDATE()) ";
                         else
-                            defaultValue = " DEFAULT('" + sourRow["Default"].ToString() + "') ";
+                            defaultValue = " DEFAULT('" + sourRow["Default"].ToString().Replace("'","''") + "') ";
                     }
                     else
                     {
@@ -611,13 +611,41 @@ SELECT @SQL AS [SQL]
                         if (sourRow.ItemArray.SerializeJson() == tarRow.ItemArray.SerializeJson()) continue;
 
                         //2.1 判断是否为字段类型,长度修改
-                        sb.AppendLine($@"-- {tableName}表修改字段{columnName} ");
-                        sb.AppendLine("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + type + " " + defaultValue + " " + isNull + "");
+                        sb.AppendLine($@"-- {tableName} 表修改字段 {columnName} ");
+
+                        //先删除默认值约束,避免修改失败的问题
+                        sb.AppendLine($@"
+--xx.1 获取表中对应字段是否存在默认值约束
+DECLARE @DefaultKey NVARCHAR(200)
+SET @DefaultKey = (
+        SELECT TOP 1 c.name
+        FROM   sysconstraints a 
+               　　inner
+               JOIN syscolumns b ON  a.colid = b.colid 
+                    　　inner
+               JOIN sysobjects c ON  a.constid = c.id
+                    　　where a.id = OBJECT_ID('{tableName}') 
+                    　　and b.name = '{columnName}'
+    )
+--xx.2 如果存在默认值约束,则进行默认值约束删除
+IF (ISNULL(@DefaultKey ,'')!='')
+    EXEC ('alter table {tableName} drop constraint '+@DefaultKey)                        
+                            ");
+
+                        sb.AppendLine("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + type + " " + isNull + "");
+                        //判断是否需要修改字段默认值
+                        if (!string.IsNullOrWhiteSpace(defaultValue)) {
+                            sb.AppendLine($@"
+--xx.3 表中增加新的默认值
+ALTER TABLE {tableName} ADD {defaultValue} FOR {columnName} WITH VALUES                           
+                            ");
+                        }
                         sb.AppendLine("GO");
 
                         //2.2.判断是否为备注修改
                         if (description != tarRow["Description"].ToString())
                         {
+                            description = description.Replace("'", "''"); //避免带引号的备注
                             sb.AppendLine(@"
 --" + columnName + @"字段备注修改
 IF EXISTS(SELECT 1
@@ -631,7 +659,7 @@ WHERE  g.[value] IS NULL
        EXEC sp_addextendedproperty 'MS_Description', '" + description + @"', 'user', 'dbo', 'table', '" + tableName + @"', 'column', '" + columnName + @"'
 ELSE
        EXEC sp_updateextendedproperty 'MS_Description', '" + description + @"', 'user', 'dbo', 'table', '" + tableName + @"', 'column', '" + columnName + @"'
-GO;
+GO
                             ");
 
 
@@ -699,7 +727,7 @@ GO
         /// <returns></returns>
         public string AppendOtherSchemaCheckScript(string name, string type)
         {
-
+            type = type.ToUpper().Trim();
             if ("P" == type)
             {
                 return $@"

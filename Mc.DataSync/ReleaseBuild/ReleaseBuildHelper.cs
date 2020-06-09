@@ -243,7 +243,7 @@ set @table_script=''''
 select @table_script=@table_script+
         '' [''+t.NAME+''] ''
         +(case when t.xusertype in (175,62,239,59,122,165,173) then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
-              when t.xusertype in (231) and t.length=-1 then ''[ntext]''
+              when t.xusertype in (231) and t.length=-1 then ''[nvarchar](max)''
               when t.xusertype in (231) and t.length<>-1 then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
              when t.xusertype in (167) and t.length=-1 then ''[text]''
               when t.xusertype in (167) and t.length<>-1 then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
@@ -302,7 +302,8 @@ select @indid=INDID
 from 
 (
     SELECT A.INDID,B.KEYNO
-        ,REPLACE(NAME,''dbo.'','''') AS [Name],(SELECT NAME FROM SYSOBJECTS WHERE ID=A.ID) AS TABNAME,
+        , ''[''+[Name]+'']'' AS [Name]
+        ,(SELECT NAME FROM SYSOBJECTS WHERE ID=A.ID) AS TABNAME,
         (SELECT NAME FROM SYSCOLUMNS WHERE ID=B.ID AND COLID=B.COLID) AS COLNAME,
         (CASE WHEN EXISTS(SELECT 1 FROM SYSOBJECTS WHERE NAME=A.NAME AND XTYPE=''UQ'') THEN ''UNIQUE'' 
               WHEN EXISTS(SELECT 1 FROM SYSOBJECTS WHERE NAME=A.NAME AND XTYPE=''PK'') THEN ''PRIMARY KEY''

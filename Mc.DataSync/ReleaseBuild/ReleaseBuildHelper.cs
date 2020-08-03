@@ -117,7 +117,7 @@ ORDER BY a.id,a.colorder
         /// </summary>
         private const string CONST_SQL_GETVIEWANDPROCEDURE = @"
             --DECLARE @Name NVARCHAR(200)
-            --SET @Name=''
+--            SET @Name=''
             --获取数据表中所有的存储过程
             SELECT (
                        CASE 
@@ -125,7 +125,7 @@ ORDER BY a.id,a.colorder
                             WHEN a.[type]='V' THEN N'V/\'
                             ELSE 'unknown'
                        END
-                   )+a.Name         AS Id,
+                   )+'['+c.name +'].' +a.Name         AS Id,
                    (
                        CASE 
                             WHEN a.[type]='P' THEN N'存储过程'
@@ -133,13 +133,15 @@ ORDER BY a.id,a.colorder
                             ELSE 'unknown'
                        END
                    )         AS TypeName,
-                   a.Name,
+                   '['+c.name +'].' + a.Name AS Name,
                    a.[Type],
                    b.[Definition]
             FROM   sys.all_objects     a,
-                   sys.sql_modules     b
+                   sys.sql_modules     b,
+                   sys.schemas       c
             WHERE  a.is_ms_shipped = 0  
                    AND a.object_id = b.object_id  
+                   AND a.schema_id = c.schema_id
                    AND a.[type]  IN ('P' ,'V')
                    AND (@Name='' OR a.name = @Name) --增加一个条件,方便获取数据
                    AND (
@@ -171,18 +173,20 @@ ORDER BY a.id,a.colorder
         /// </summary>
         private const string CONST_SQL_GETFUNCTION = @"
             --DECLARE @Name NVARCHAR(200)
-            --SET @Name='func_CheckInternalPermission'
+--            SET @Name=''
             --3.获取数据表中所有的函数
-            SELECT 'FN/\'+a.name AS Id, 
-                   a.Name,
+            SELECT 'FN/\'+'['+c.name +'].' +a.name AS Id, 
+                   '['+c.name +'].' +a.Name AS Name,
                    --a.[type],
                    'FN' AS [Type],
                    N'函数' AS TypeName,
                    b.[Definition]
             FROM   sys.all_objects     a,
-                   sys.sql_modules     b
+                   sys.sql_modules     b,
+                   sys.schemas       c
             WHERE  a.is_ms_shipped = 0  
                    AND a.object_id = b.object_id  
+                   AND a.schema_id = c.schema_id
                    AND a.[type] IN ('AF' ,'FN' ,'TF' ,'FS' ,'FT' ,'IF')
                    AND (@Name='' OR a.name = @Name) --增加一个条件,方便获取数据
             ORDER BY a.[name] ASC

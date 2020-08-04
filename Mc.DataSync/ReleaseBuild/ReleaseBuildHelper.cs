@@ -679,13 +679,13 @@ GO
                             sb.AppendLine(@" 
 --删除原始主键
 DECLARE @Pk VARCHAR(200);
-SELECT @Pk = NAME
+SELECT @Pk ='[' + NAME +']'
 FROM   sysobjects
 WHERE  parent_obj     = OBJECT_ID('" + tableName + @"')  
        AND xtype      = 'PK';
 IF @Pk IS NOT NULL
 BEGIN
-    EXEC ('ALTER TABLE " + tableName + @" DROP '+@Pk)
+    EXEC ('ALTER TABLE " + tableName + @" DROP '+ @Pk )
 END
 GO
                             ");

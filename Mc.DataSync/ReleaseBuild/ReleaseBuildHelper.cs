@@ -947,7 +947,7 @@ GO
                 newRow[TABLE_DATACOLUMN_NAME] = item["TableName"];
                 newRow[TABLE_DATACOLUMN_TYPE] = "T";
                 newRow[TABLE_DATACOLUMN_TYPENAME] = "表";
-                newRow[TABLE_DATACOLUMN_DEFINITION] = (dt.Select(" TableName = '" + tableName + "'").CopyToDataTable().SerializeJson());
+                newRow[TABLE_DATACOLUMN_DEFINITION] = (dt.Select(" TableName = '" + tableName.Replace("'", "''") + "'").CopyToDataTable().SerializeJson());
                 returnDt.Rows.Add(newRow);
             }
 

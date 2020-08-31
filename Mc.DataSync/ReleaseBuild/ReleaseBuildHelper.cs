@@ -246,7 +246,7 @@ use '+@DbName+
 set @table_script='''' 
 select @table_script=@table_script+
         '' [''+t.NAME+''] ''
-        +(case when t.xusertype in (175,62,239,59,122,165,173) then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
+        +(case when t.xusertype in (175,62,239,122,165,173) then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
               when t.xusertype in (231) and t.length=-1 then ''[nvarchar](max)''
               when t.xusertype in (231) and t.length<>-1 then ''[''+p.name+''] (''+convert(varchar(30),isnull(t.prec,''''))+'')''
              when t.xusertype in (167) and t.length=-1 then ''[text]''
@@ -308,7 +308,7 @@ from
     SELECT A.INDID,B.KEYNO
         , ''[''+[Name]+'']'' AS [Name]
         ,(SELECT NAME FROM SYSOBJECTS WHERE ID=A.ID) AS TABNAME,
-        (SELECT NAME FROM SYSCOLUMNS WHERE ID=B.ID AND COLID=B.COLID) AS COLNAME,
+        ''[''+(SELECT NAME FROM SYSCOLUMNS WHERE ID=B.ID AND COLID=B.COLID)+'']'' AS COLNAME,
         (CASE WHEN EXISTS(SELECT 1 FROM SYSOBJECTS WHERE NAME=A.NAME AND XTYPE=''UQ'') THEN ''UNIQUE'' 
               WHEN EXISTS(SELECT 1 FROM SYSOBJECTS WHERE NAME=A.NAME AND XTYPE=''PK'') THEN ''PRIMARY KEY''
               ELSE ''INDEX'' END)  AS UNIQ,
@@ -732,6 +732,15 @@ GO
         /// <returns></returns>
         public string AppendOtherSchemaCheckScript(string name, string type)
         {
+            //说明有可能带了 dbo.xxxx
+            if (name.IndexOf('.') > 0) {
+               var prefix =  name.Substring(0, name.IndexOf('.') + 1);
+                //转换成小写，并判断前缀里面是否涵盖"dbo",如果涵盖，则进行舍弃
+                if (prefix.ToLower().IndexOf("dbo") >= 0) {
+                    name = name.Substring(name.IndexOf('.') + 1);
+                }
+            }
+ 
             type = type.ToUpper().Trim();
             if ("P" == type)
             {

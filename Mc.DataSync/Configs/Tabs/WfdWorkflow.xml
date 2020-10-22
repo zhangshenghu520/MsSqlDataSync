@@ -15,12 +15,9 @@
     </GetSql>
     <!-- 传递参数配置 -->
     <ReplaceParams>
-      <ReplaceParam>
-        <!-- 参数列字段  -->
-        <ParamName>workflowCode</ParamName>
-        <!-- 参数替换变量名称 -->
-        <InputColunmnName>WorkflowCode</InputColunmnName>
-      </ReplaceParam>
+		<!-- 执行sql参数化字段名称  -->
+		<!-- 传入参数化获取数据时传入的字段名称 -->
+		<ReplaceParam ParamName="workflowCode" InputColunmnName="WorkflowCode"/>
     </ReplaceParams>
   </TabConfig>
   <!-- 对比配置 -->

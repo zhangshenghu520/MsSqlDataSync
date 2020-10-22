@@ -164,7 +164,10 @@
     <EmbeddedResource Include="ReleaseBuild\WinCompare.resx">
       <DependentUpon>WinCompare.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\DataSources\FrmDashboard.NameAndSql.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

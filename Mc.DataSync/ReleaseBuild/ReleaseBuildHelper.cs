@@ -1828,16 +1828,28 @@ GO
     /// </summary>
     public class ReplaceParam
     {
+       private string paramName = string.Empty;
         /// <summary>
         /// 执行sql参数化字段名称
         /// </summary>
         [XmlAttribute(AttributeName = "ParamName")]
-        public string ParamName { get; set; }
+        public string ParamName
+        {
+            get { return paramName; }
+            set { paramName = value; }
+        }
+
+        private string inputColunmnName = string.Empty;
         /// <summary>
         /// 传入参数化获取数据时传入的字段名称
         /// </summary>
         [XmlAttribute(AttributeName = "InputColunmnName")]
-        public string InputColunmnName { get; set; }
+        public string InputColunmnName
+        {
+            get { return inputColunmnName; }
+            set { inputColunmnName = value; }
+        }
+
     }
 
     #endregion

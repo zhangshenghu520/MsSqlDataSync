@@ -17,11 +17,11 @@ namespace Mc.DataSync.DataSync
         /// <summary>
         /// 模板列表
         /// </summary>
-        public static Dictionary<string, string> handlers = new Dictionary<string, string>();
-        static Commander()
+        public Dictionary<string, string> handlers = new Dictionary<string, string>();
+        public Commander()
         {
             // 读取Handler
-            DirectoryInfo di = new DirectoryInfo(AppPath.GetBinRoot());
+            DirectoryInfo di = new DirectoryInfo(AppPath.RuntimePath);
             var handlerPath = Path.Combine(di.FullName, PathConfig.HANDLER_PATH);
             DirectoryInfo handlerFiles = new DirectoryInfo(handlerPath);
             var files = handlerFiles.GetFiles();

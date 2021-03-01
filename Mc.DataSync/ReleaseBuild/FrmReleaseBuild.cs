@@ -26,6 +26,8 @@ namespace Mc.DataSync.ReleaseBuild
             this.bgw_Generate.WorkerReportsProgress = true;  //设置能报告进度更新
             this.bgw_Generate.WorkerSupportsCancellation = true;  //设置支持异步取消
             Control.CheckForIllegalCrossThreadCalls = false;//取消线程间的安全检查
+
+            this.bgw_Generate.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgw_Generate_DoWork);
         }
 
         /// <summary>

@@ -204,7 +204,7 @@
             // 
             // bgw_Generate
             // 
-            this.bgw_Generate.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgw_Generate_DoWork);
+            //this.bgw_Generate.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bgw_Generate_DoWork);
             this.bgw_Generate.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bgw_Generate_RunWorkerCompleted);
             // 
             // FrmReleaseBuild

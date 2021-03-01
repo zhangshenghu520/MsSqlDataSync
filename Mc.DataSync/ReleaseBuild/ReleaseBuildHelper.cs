@@ -586,17 +586,7 @@ SELECT @SQL AS [SQL]
                     }
 
                     isNull = Convert.ToInt32(sourRow["IsNull"]) == 1 ? " NULL " : " NOT NULL ";
-                    if (!string.IsNullOrEmpty(sourRow["Default"].ToString()))
-                    {
-                        if (sourRow["Default"].ToString().ToLower() == "getdate()")
-                            defaultValue = " DEFAULT(GETDATE()) ";
-                        else
-                            defaultValue = " DEFAULT('" + sourRow["Default"].ToString().Replace("'","''") + "') ";
-                    }
-                    else
-                    {
-                        defaultValue = "";
-                    }
+                    defaultValue = GetDefaultValue(Convert.ToString(sourRow["Default"]));
                     description = sourRow["Description"].ToString();
 
                     var tarRows = tarDt.Select("ColumnName = '" + columnName + "'");
@@ -604,13 +594,14 @@ SELECT @SQL AS [SQL]
                     if (tarRows.Count() == 0)
                     {
                         sb.AppendLine($@"-- {tableName}表新增字段{columnName} ");
-                        sb.AppendLine(@"ALTER TABLE " + tableName + " ADD " + columnName + " " + type + " " + defaultValue + " " + isNull + "");
+                        sb.AppendLine(@"ALTER TABLE " + tableName + " ADD [" + columnName + "] " + type + " " + defaultValue + " " + isNull + "");
                         sb.AppendLine("GO");
                     }
                     //2.否则就是修改项
                     else
                     {
                         var tarRow = tarRows[0];
+                        var tarDefaultValue = GetDefaultValue(Convert.ToString(tarRow["Default"]));
 
                         //如果内容一致,则不需要生成
                         if (sourRow.ItemArray.SerializeJson() == tarRow.ItemArray.SerializeJson()) continue;
@@ -637,12 +628,13 @@ IF (ISNULL(@DefaultKey ,'')!='')
     EXEC ('alter table {tableName} drop constraint '+@DefaultKey)                        
                             ");
 
-                        sb.AppendLine("ALTER TABLE " + tableName + " ALTER COLUMN " + columnName + " " + type + " " + isNull + "");
+                        sb.AppendLine("ALTER TABLE " + tableName + " ALTER COLUMN [" + columnName + "] " + type + " " + isNull + "");
                         //判断是否需要修改字段默认值
-                        if (!string.IsNullOrWhiteSpace(defaultValue)) {
+                        if (defaultValue != tarDefaultValue)
+                        {
                             sb.AppendLine($@"
 --xx.3 表中增加新的默认值
-ALTER TABLE {tableName} ADD {defaultValue} FOR {columnName} WITH VALUES                           
+ALTER TABLE {tableName} ADD {defaultValue} FOR [{columnName}] WITH VALUES                           
                             ");
                         }
                         sb.AppendLine("GO");
@@ -721,6 +713,28 @@ GO
             }
 
 
+        }
+        /// <summary>
+        /// 根据传入的默认值进行返回默认值项
+        /// </summary>
+        /// <param name="defaultText">默认值字符串</param>
+        /// <returns></returns>
+        private string GetDefaultValue(string defaultText)
+        {
+            string defaultValue;
+            if (!string.IsNullOrEmpty(defaultText))
+            {
+                if (defaultText.ToLower() == "getdate()")
+                    defaultValue = " DEFAULT(GETDATE()) ";
+                else
+                    defaultValue = " DEFAULT('" + defaultText.Replace("'", "''") + "') ";
+            }
+            else
+            {
+                defaultValue = "";
+            }
+
+            return defaultValue;
         }
 
         /// <summary>
